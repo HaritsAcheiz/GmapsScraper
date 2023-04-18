@@ -22,7 +22,7 @@ class GmapsScraper():
             'TE': 'trailers'
         }
 
-        proxy = 'http://haritsproxy:M1tsut4n1_streaming-1@geo.iproyal.com:12321'
+        proxy = 'http://<username>:<password>@<host>:<port>'
 
         with httpx.Client(proxies=proxy) as client:
             response = client.get(url)
