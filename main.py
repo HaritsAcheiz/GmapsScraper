@@ -1,6 +1,8 @@
 import httpx
 from selectolax.parser import HTMLParser
 from dataclasses import dataclass
+import cred
+import re
 
 @dataclass
 class GmapsScraper():
@@ -8,7 +10,7 @@ class GmapsScraper():
     def fetch(self, url):
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/111.0',
+            'User-Agent': 'Mozilla/5.0 (Wayland; Linux x86_64; System76) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Ubuntu/23.04 (5.5.2805.44-1) Vivaldi/5.5.2805.44',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
             'Accept-Encoding': 'gzip, deflate, br',
@@ -22,25 +24,29 @@ class GmapsScraper():
             'TE': 'trailers'
         }
 
-        proxy = 'http://<username>:<password>@<host>:<port>'
+        proxy = f'http://{cred.proxy}'
 
         with httpx.Client(proxies=proxy) as client:
             response = client.get(url)
         return response.text
 
     def parser(self, html):
-        tree = HTMLParser(html)
-        parent = tree.css_first('script:nth-of-type(7)').text().split('')
+        email_pattern = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'
+        emails = re.findall(email_pattern, html)
+        phone_pattern = r'\(?\d{3}\)[-.\s]+\d{3}[-.\s]+\d{4}'
+        phone = re.findall(phone_pattern, html)
+        # tree = HTMLParser(html)
+        # parent = tree.css_first('script:nth-of-type(7)').text().split('=')
         # parent = tree.css('script')
         # print(len(parent))
         # for i, item in enumerate(parent):
         #     print(f'================script{i}====================')
         #     print(item.html)
-        return parent
+        return phone
 
 
 if __name__ == '__main__':
-    url = 'https://www.google.com/maps/search/Restaurants/@37.7914119,-122.4132047,14z/data=!3m1!4b1'
+    url = 'https://www.google.com/maps/search/Restaurants/@37.7914119,-122.4132047,14z'
     scraper = GmapsScraper()
     html = scraper.fetch(url)
     result = scraper.parser(html)
